@@ -16,7 +16,8 @@ app.use(express.json());
 app.use(cors());
 app.use('/products', products);
 app.use('/categories', categories);
-app.use('/users', users);
+app.use('/user', user);
+app.use('/trackHistories', trackHistory);
 
 
 const run = async() => {
