@@ -1,26 +1,27 @@
-import mongoose from "mongoose";
+import express from 'express';
+import User from '../models/User.js';
+import TrackHistory from '../models/TrackHistory.js';
 
-const Schema = mongoose.Schema;
+const router = express.Router();
 
-const TrackHistorySheme = new Schema ({ 
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    track: {
-        type: Schema.Types.ObjectId,
-        ref: 'Track',
-        required: true
-    },
-    datetime: {
-        type: Date,
-        default: Date()
-    },
+router.post('/secret', async (req,res)=> {
+    const token = req.get('Authorization');
+    if(!token) return res.status(401).send({error: "No token present"});
+
+    const user = await User.findOne({token});
+
+    if(!user) return res.status(401).send({error: "Wrong token"});
+
+    const body = {...req.body, user: user};
+    const history = new TrackHistory(body);
+
+    try {
+        await history.save();
+    
+        res.send(body);
+    } catch(error) {
+        res.sendStatus(401).send({error: 'Unauthorized'});
+    };
 })
 
-
-const TrackHistory = mongoose.model('TrackHistory', TrackHistorySheme);
-
-
-export default TrackHistory; 
+export default router;
