@@ -4,6 +4,8 @@ import cors from 'cors';
 import products from './routes/products.js';
 import categories from "./routes/categories.js";
 import users from "./routes/users.js";
+import user from './routes/user.js';
+import trackHistory from './routes/trackHistory.js';
 
 const app = express();
 const PORT = 8000;
