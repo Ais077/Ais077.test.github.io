@@ -1,51 +1,60 @@
-import mongoose from "mongoose";
-import bcrypt from 'bcrypt';
+import express from "express";
+import {nanoid} from "nanoid";
+import * as path from 'path';
+import multer from 'multer';
+import config from "../config.js";
+import Album from "../models/Album.js";
 
-const Schema = mongoose.Schema;
-
-const UserSchema = new Schema ({ 
-    username: {
-        type: String,
-        required: true,
-        unique: true
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, config.uploadPath);
     },
-
-    password: {
-        type: String,
-        required: true
-    },
-    token: {
-        type: String,
-        required: true
+    filename: (req, file, cb) => {
+        cb(null, nanoid() + path.extname(file.originalname));
     }
-})
+});
 
-UserSchema.pre('save', async function(next){
-    if(!this.isModified('password')) return next();
-    const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
-    const hash = await bcrypt.hash(this.password, salt);
+const upload = multer({storage});
+const router = express.Router();
 
-    this.password = hash;
+router.get('/:id?', async (req, res) => {
+    if(req.query.artist) {
+        try {
+            const albums = await Album.find({artist: req.query.artist}).sort([['year', 1]]).populate('artist');
+            res.send(albums);
+        } catch (error) {
+            res.sendStatus(404);
+        };
+    } else if(req.params.id) {
+        try {
+            const albums = await Album.findById(req.params.id).populate('artist');
+            res.send(albums);
+        } catch (error) {
+            res.sendStatus(404);
+        };
+    } else {
+        try {
+            const albums = await Album.find().populate('artist');
+            res.send(albums);
+        } catch (e) {
+            res.sendStatus(500);
+        };
+    };
+});
 
-    next();
-})
+router.post('/', upload.single('image'), async (req, res) => {  
+    const body = {...req.body};
+    if(req.file) body.image = req.file.filename;
 
-UserSchema.set('toJSON', {
-    transform: (doc, ret, options) => {
-        delete ret.password;
-        return ret;
+    const album = new Album(body);
+    try {
+        await album.save();
+        res.send(album);
+    } catch(e) {
+        res.sendStatus(500);
+    };
+});
 
-    }
-})
 
-UserSchema.methods.checkPassword = function(paswword){
-    return bcrypt.compare(paswword, this.password);
-};
 
-UserSchema.methods.generateToken = function(){
-   this.token = nanoid();
-};
-
-const User = mongoose.model('User', UserSchema);
-
-export default User;
+export default router;

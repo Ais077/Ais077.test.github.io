@@ -1,5 +1,5 @@
 import express from "express";
-import Category from "../models/Category.js";
+import Category from "../models/Album.js";
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
        const categories = await Category.find();
        res.send(categories);
    } catch {
-       res.sendStatus(500);
+       res.sendStatus(401);
    }
 });
 

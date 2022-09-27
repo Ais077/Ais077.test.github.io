@@ -1,11 +1,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import products from './routes/products.js';
-import categories from "./routes/categories.js";
-import users from "./routes/users.js";
-import user from './routes/user.js';
+import products from './routes/track.js';
+import categories from "./routes/album.js";
+import users from './routes/users.js';
 import trackHistory from './routes/trackHistory.js';
+import track from './routes/track.js';
 
 const app = express();
 const PORT = 8000;
@@ -14,9 +14,10 @@ const PORT = 8000;
 app.use(express.static('public'));
 app.use(express.json());
 app.use(cors());
-app.use('/products', products);
-app.use('/categories', categories);
-app.use('/user', user);
+app.use('/artist', products);
+app.use('/albums', categories);
+app.use('/track', track);
+app.use('/user', users);
 app.use('/trackHistories', trackHistory);
 
 
